@@ -10,7 +10,7 @@ document.querySelector('input[name="tool"][value="1"]').checked = true;
 const pencilSize = document.querySelector(".pencilHeight")
 const rgbPicker = document.querySelector(".rgbPicker")
 const colorBox = document.querySelectorAll(".colorBox")
-let toolEl = document.querySelectorAll('.tool');
+let toolEl = document.querySelectorAll('.toolR');
 
 let actualColor = "black";
 let tool = "1"
@@ -93,7 +93,7 @@ rgbPicker.addEventListener("change", e =>{
 toolEl.forEach(i => {
     i.addEventListener('click', e =>{
         tool = i.value
-        console.log(i.value)
+        console.log(tool)
     })
 })
 
