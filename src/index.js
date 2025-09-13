@@ -42,11 +42,12 @@ canvas.addEventListener('mousemove', e => {
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     const size = pencilSize.value
-  if (e.buttons === 1 && tool === "1") {
+
     ctx.lineWidth = size;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     
+  if (e.buttons === 1 && tool === "1") {    
     ctx.lineTo(x, y);
     ctx.strokeStyle = actualColor
     ctx.stroke()
