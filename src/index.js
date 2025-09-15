@@ -4,6 +4,11 @@ let ctx = canvas.getContext("2d")
 canvas.width = canvas.offsetWidth;
 canvas.height = canvas.offsetHeight;
 
+// Preenche o fundo com branco
+ctx.fillStyle = "#fff";
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+
 document.querySelector('input[name="tool"][value="1"]').checked = true;
 
     // Botões de seleção
@@ -13,59 +18,87 @@ const colorBox = document.querySelectorAll(".colorBox")
 let toolEl = document.querySelectorAll('.toolR');
 
 let actualColor = "black";
-let tool = "1"
+let tool = "1";
+let isDrawing = false;
 
     // Detecta se a janela foi redimensionada e corrige o canvas    
 window.addEventListener('resize', () => {
-  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  // Salva o desenho atual
+  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
-  ctx.putImageData(imgData, 0, 0);
+  ctx.fillStyle = "#fff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.putImageData(img, 0, 0);
 });
 
-    // Detecta o primeiro click do mouse
-canvas.addEventListener('mousedown', e => {
+    // Primeiro click do mouse/touch
+function cursorStart(e){
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    let coords = touchType(e, rect)
     const size = pencilSize.value
 
     ctx.save()
     ctx.lineWidth = size;
     ctx.beginPath();
-    ctx.moveTo(x, y);
-})
+    ctx.moveTo(coords.x, coords.y);
+    isDrawing = true
+}
 
-    // Detecta o arrastar do mouse
-canvas.addEventListener('mousemove', e => {
+    // arrastar do mouse/touch
+function cursorMove(e){
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    let coords = touchType(e, rect)
     const size = pencilSize.value
 
     ctx.lineWidth = size;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
     
-  if (e.buttons === 1 && tool === "1") {    
-    ctx.lineTo(x, y);
+  if (isDrawing && tool === "1") {    
+    ctx.lineTo(coords.x, coords.y);
     ctx.strokeStyle = actualColor
     ctx.stroke()
   }
-});
+}
 
-    // Detecta quando o mouse é solto
-canvas.addEventListener('mouseup', e => {
+    // soltando o mouse/touch
+function cursorUp(e){
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
     const size = pencilSize.value
-
+    let coords = touchType(e, rect)
     ctx.lineWidth = size;
-    ctx.lineTo(x, y);
+    ctx.lineTo(coords.x, coords.y);
     ctx.strokeStyle = actualColor
     ctx.stroke()
-});
+    ctx.closePath()
+    isDrawing = false
+}
+
+    // Detecta se o toque é mouse ou touch
+function touchType(e, rect){
+    if (e.touches) {
+        const x = e.touches[0].clientX - rect.left;
+        const y = e.touches[0].clientY - rect.top;
+        return {x: x,y: y}
+    } else {
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        return {x: x,y: y}
+    }
+}
+
+    // Detecta o primeiro click do mouse/touch
+canvas.addEventListener('mousedown', e => cursorStart(e))
+canvas.addEventListener('touchstart', e => cursorStart(e))
+
+    // Detecta o arrastar do mouse/touch
+canvas.addEventListener('mousemove', e => cursorMove(e));
+canvas.addEventListener('touchmove', e => cursorMove(e));
+
+    // Detecta quando o mouse/touch é solto
+canvas.addEventListener('mouseup', e => cursorUp(e));
+canvas.addEventListener('touchend', e => cursorUp(e));
 
 
     // Sensor nos botões de cor
@@ -98,6 +131,17 @@ toolEl.forEach(i => {
     })
 })
 
+    // Baixar imagem
+document.querySelector('.download').addEventListener('click', ()=> {
+  const image = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+  
+  const element = document.createElement('a');
+  const file = 'Art.png';
+  element.setAttribute('href', image);
+  element.setAttribute('download', file);
+
+  element.click();
+})
 
 
 
